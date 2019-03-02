@@ -13,7 +13,7 @@ var params = {
 	noiseScale: 0.10,
 	noiseSpeed: 0.009,
 	noiseStrength: 0.08,
-	noiseFreeze: false,
+	noiseFreeze: true,
 	particleCount: 5000,
 	particleSize: 0.05, //0.02
 	particleSpeed: 0.1,
@@ -23,7 +23,7 @@ var params = {
 	particleBlending: THREE.AdditiveBlending
 };
 
-console.log(params.particleColor.toString(16));
+
 let color 
 
 
@@ -116,8 +116,9 @@ var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, .1, 1000);
 const clock = new THREE.Clock();
 
+const filter = document.querySelector(".filter")
 var renderer = new THREE.WebGLRenderer();
-document.body.appendChild(renderer.domElement);
+filter.appendChild(renderer.domElement);
 
 const ambientLight = new THREE.DirectionalLight(0xffffff, 2)
 ambientLight.position.x = 0
@@ -174,6 +175,7 @@ function Particle(x,y,z){
 	this.acc = new THREE.Vector3(0,0,0);
 	this.angle = new THREE.Euler(0,0,0);
 	this.mesh = null;
+	
 }
 
 Particle.prototype.init = function() {
@@ -204,9 +206,50 @@ Particle.prototype.update = function() {
 	if(this.pos.x < 0) this.pos.x = params.size - Math.random();
 	if(this.pos.y < 0) this.pos.y = params.size - Math.random();
 	if(this.pos.z < 0) this.pos.z = params.size - Math.random();
-	
+
 	this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
 }
+
+/**
+ * Cursor
+ */
+const cursor = {}
+cursor.x = 0
+cursor.y = 0
+
+window.addEventListener('mousemove', (_event) =>
+{
+    cursor.x = _event.clientX / sizes.width - 0.5
+		cursor.y = _event.clientY / sizes.height - 0.5
+
+		//frameCount += cursor.x*1
+
+		if(params.particleSpeed != 0.2){
+			setTimeout(() => {
+				params.particleSpeed = 0.1
+			}, 1600);
+			setTimeout(() => {
+				params.particleSpeed = 0.15
+			}, 1200);
+			params.particleSpeed = 0.2
+		}	
+})
+let pastSpeed = params.particleSpeed
+window.addEventListener( 'wheel', onMouseWheel, false );
+function onMouseWheel( event ) {
+    event.preventDefault();
+    
+		params.particleSpeed = pastSpeed + Math.abs(event.deltaY/500)
+		
+}
+window.addEventListener('mousedown', ()=>{
+	//noiseOffset += 1
+	params.noiseStrength = 0
+})
+window.addEventListener('mouseup', ()=>{
+	//noiseOffset += 1
+	params.noiseStrength = 1
+})
 
 cameraControls.enabled = false
 
@@ -221,24 +264,16 @@ var noiseOffset = Math.random()*100;
 var numParticlesOffset = 0;
 var p = null
 let x = 0
-params.particleColor = 15409672
-let increment = 0.5
+
 function render() {
 	requestAnimationFrame( render );
 	const delta = clock.getDelta();
-    cameraControls.update(delta);
+  cameraControls.update(delta);
 	cameraControls.setTarget(params.size/2,params.size/2,params.size/2);
 	cameraControls.setPosition(-5,-5,-5,true)
 	// Update particle count
-	//console.log(params.particleColor);
-	params.particleColor =  params.particleColor + increment 
-		if (params.particleColor > 15409915) { // 15410067
-			increment = -0.5
-		}
-		if (params.particleColor < 15409672) { // 15409672
-			increment = 0.5
-		}
-		
+
+
 	numParticlesOffset = parseInt(params.particleCount - particles.length);
 	if(numParticlesOffset > 0){
 		for(var i = 0; i < numParticlesOffset; i++){
@@ -257,17 +292,16 @@ function render() {
    		particles.splice(i, 1);
 		}
 	}
-	
+
 	// Update particles based on their coords
 	for(var i = 0; i < particles.length; i++){
 		p = particles[i];
 		
 		noise = PerlinNoise.noise(
-			p.pos.x*params.noiseScale,
-			p.pos.y*params.noiseScale,
+			p.pos.x*params.noiseScale*(1+(cursor.x)),
+			p.pos.y*params.noiseScale*(1+(cursor.y)),
 			p.pos.z*params.noiseScale + noiseOffset + frameCount*params.noiseSpeed
 		) * Math.PI*2;
-
 		p.angle.set(noise, noise, noise);
 		p.update();
 	}
@@ -276,7 +310,8 @@ function render() {
 	material.color.setHex(params.particleColor);
 	material.size = params.particleSize;
 	material.blending = parseInt(params.particleBlending);
-	if(!params.noiseFreeze) frameCount++;
+	if(!params.noiseFreeze) 
+		frameCount += 0.5;
 	
 	renderer.render( scene, camera );
 }
