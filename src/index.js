@@ -146,15 +146,6 @@ renderer.setSize(sizes.width, sizes.height)
 /**
  * Post processing
  */
-const composer = new POST.EffectComposer(renderer);
-
-const effectPassGlitch = new POST.EffectPass(camera, new POST.HueSaturationEffect());
-effectPassGlitch.renderToScreen = true;
-
-composer.addPass(new POST.RenderPass(scene, camera));
-//composer.addPass(effectPassGlitch);
-//composer.addPass(new POST.DepthPass())
-
 
 
 /**
@@ -245,24 +236,15 @@ window.addEventListener('mousemove', (_event) =>
     cursor.x = _event.clientX / sizes.width - 0.5
 		cursor.y = _event.clientY / sizes.height - 0.5
 
-		//frameCount += cursor.x*1
-
-		if(params.particleSpeed != 0.2){
-			setTimeout(() => {
-				params.particleSpeed = 0.1
-			}, 1600);
-			setTimeout(() => {
-				params.particleSpeed = 0.15
-			}, 1200);
-			params.particleSpeed = 0.2
-		}	
 })
 let pastSpeed = params.particleSpeed
 window.addEventListener( 'wheel', onMouseWheel, false );
 function onMouseWheel( event ) {
     event.preventDefault();
-    
-		params.particleSpeed = pastSpeed + Math.abs(event.deltaY/500)
+    if(event.deltaY > 0 )
+			params.particleSpeed = pastSpeed + Math.abs(event.deltaY/500)
+		else 
+		params.particleSpeed = pastSpeed * Math.abs(event.deltaY/500)
 		
 }
 window.addEventListener('mousedown', ()=>{
@@ -292,8 +274,7 @@ function render() {
 	requestAnimationFrame( render );
 	const delta = clock.getDelta();
 	cameraControls.update(delta);
-	if(effect)
-		composer.render(delta);
+
 	cameraControls.setTarget(params.size/2,params.size/2,params.size/2);
 	cameraControls.setPosition(-5,-5,-5,true)
 	// Update particle count
