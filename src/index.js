@@ -6,15 +6,18 @@ import * as THREE from 'three'
 
 import CameraControls from 'camera-controls'
 
+import * as POST from 'postprocessing'
+ 
+
 CameraControls.install( { THREE: THREE } );
 
 var params = {
-	size: 30,
+	size: 20,
 	noiseScale: 0.10,
 	noiseSpeed: 0.009,
 	noiseStrength: 0.08,
 	noiseFreeze: true,
-	particleCount: 5000,
+	particleCount: 2000,
 	particleSize: 0.05, //0.02
 	particleSpeed: 0.1,
 	particleDrag: 0.9,
@@ -112,6 +115,8 @@ let PerlinNoise = new function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Set up renderer
 ////////////////////////////////////////////////////////////////////////////////
+
+
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, .1, 1000);
 const clock = new THREE.Clock();
@@ -134,6 +139,24 @@ sizes.width = window.innerWidth
 sizes.height = window.innerHeight
 
 renderer.setSize(sizes.width, sizes.height)
+
+
+
+
+/**
+ * Post processing
+ */
+const composer = new POST.EffectComposer(renderer);
+
+const effectPassGlitch = new POST.EffectPass(camera, new POST.HueSaturationEffect());
+effectPassGlitch.renderToScreen = true;
+
+composer.addPass(new POST.RenderPass(scene, camera));
+//composer.addPass(effectPassGlitch);
+//composer.addPass(new POST.DepthPass())
+
+
+
 /**
  * Resize
  */
@@ -264,11 +287,13 @@ var noiseOffset = Math.random()*100;
 var numParticlesOffset = 0;
 var p = null
 let x = 0
-
+let effect = true
 function render() {
 	requestAnimationFrame( render );
 	const delta = clock.getDelta();
-  cameraControls.update(delta);
+	cameraControls.update(delta);
+	if(effect)
+		composer.render(delta);
 	cameraControls.setTarget(params.size/2,params.size/2,params.size/2);
 	cameraControls.setPosition(-5,-5,-5,true)
 	// Update particle count
