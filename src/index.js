@@ -18,7 +18,7 @@ var params = {
 	noiseStrength: 0.08,
 	noiseFreeze: true,
 	particleCount: 2000,
-	particleSize: 0.05, //0.02
+	particleSize: 0.06, //0.02
 	particleSpeed: 0.1,
 	particleDrag: 0.9,
 	particleColor: 0xeb21f2, //0x41a5ff, 0xff6728, 0xeb21f2
