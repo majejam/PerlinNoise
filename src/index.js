@@ -27,8 +27,6 @@ var params = {
 };
 
 
-let color 
-
 
 function random_color( format ){
 	var rint = Math.floor( 0x00000 * Math.random());
