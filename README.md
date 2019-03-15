@@ -6,8 +6,6 @@ Flowfield
 ## Requirements
 You only need <b>node.js</b> pre-installed and you’re good. 
 
-If you don’t want to work with THREE.js, just remove it from the node packages and the webpack config.
-
 ## Setup
 Install dependencies
 ```sh
